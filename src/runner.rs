@@ -396,7 +396,7 @@ struct PolledMessage {
     wait_time: Option<PgInterval>,
 }
 
-fn to_duration(interval: PgInterval) -> Duration {
+fn to_duration(interval: &PgInterval) -> Duration {
     const SECONDS_PER_DAY: u64 = 24 * 60 * 60;
     if interval.microseconds < 0 || interval.days < 0 || interval.months < 0 {
         Duration::default()
@@ -439,8 +439,7 @@ async fn poll_and_dispatch(
 
     let wait_time = messages
         .iter()
-        .filter_map(|msg| msg.wait_time)
-        .map(to_duration)
+        .filter_map(|msg| msg.wait_time.as_ref().map(to_duration))
         .min()
         .unwrap_or(MAX_WAIT);
 
@@ -455,7 +454,7 @@ async fn poll_and_dispatch(
             ..
         } = msg
         {
-            let retry_backoff = to_duration(retry_backoff);
+            let retry_backoff = to_duration(&retry_backoff);
             let keep_alive = if options.keep_alive {
                 Some(OwnedHandle::new(task::spawn(keep_job_alive(
                     id,
