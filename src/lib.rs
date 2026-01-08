@@ -308,7 +308,7 @@ mod tests {
             .execute(&pool)
             .await
             .unwrap();
-        sqlx::query("DELETE FROM mq_msgs WHERE id != uuid_nil()")
+        sqlx::query("DELETE FROM mq_msgs WHERE id != public.uuid_nil()")
             .execute(&pool)
             .await
             .unwrap();
